@@ -1,0 +1,25 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Figtree:wght@300;400;500&family=Inter:wght@300;400&family=Lato:wght@300;400;700&family=Space+Grotesk:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500;700&family=Playfair+Display:ital,wght@0,400..600;1,400..600&display=swap');
+@import '../public/css/site.css';
+
+/* The portfolio is served from the source-faithful static entrypoint
+   (index.html). Keep this stylesheet safe for Vite's React fallback too. */
+:root {
+  --background: 36 100% 97%;
+  --foreground: 0 0% 2%;
+  --border: 40 23% 87%;
+  --card: 36 100% 97%;
+  --card-foreground: 0 0% 2%;
+  --primary: 48 100% 62%;
+  --primary-foreground: 0 0% 2%;
+  --muted: 39 33% 88%;
+  --muted-foreground: 0 0% 32%;
+  --radius: 999px;
+}
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html,
+body,
+#root { min-height: 100%; }

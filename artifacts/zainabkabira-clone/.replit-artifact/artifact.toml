@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Zainab Kabira Portfolio"
+description = "A faithful recreation of the supplied Zainab Kabira product designer portfolio, including its home page, work case studies, about page, playground, theme toggle, navigation, motion, and responsive behavior."
+version = "1.0.0"
+id = "artifacts/zainabkabira-clone"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23064
+
+[services.development]
+run = "pnpm --filter @workspace/zainabkabira-clone run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/zainabkabira-clone", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/zainabkabira-clone/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23064"
+BASE_PATH = "/"

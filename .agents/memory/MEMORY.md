@@ -1,0 +1,1 @@
+- [Encoded site exports](encoded-site-exports.md) — add decoded asset-path aliases when serving downloaded static-site bundles.
