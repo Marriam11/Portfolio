@@ -23,13 +23,13 @@ const NAV_HTML = `
         <span>Back</span>
       </a>
       <img class="pin" src="/assets/imgVector.svg" alt="" width="14" height="20">
-      <span class="nav-loc">VANCOUVER,&nbsp;BC</span>
+      <span class="nav-loc">PAKISTAN,&nbsp;FSD</span>
     </div>
 
     <div class="nav-pill" id="nav-pill">
       <div class="nav-id">
-        <a class="nav-avatar" href="/#work" aria-label="Zainab Kabira — home">
-          <img src="/assets/imgProfilePicture.jpg" alt="">
+        <a class="nav-avatar" href="/#work" aria-label="Marriam Sajjad — home">
+          <img src="/assets/marriam-sajjad.jpg" alt="Marriam Sajjad">
         </a>
       </div>
       <div class="avail-tag" aria-hidden="true">
@@ -39,7 +39,6 @@ const NAV_HTML = `
       <div class="nav-links" id="nav-links-group">
         <a href="/#work" class="nav-link">Work</a>
         <a href="/about" class="nav-link">About</a>
-        <a href="/playground" class="nav-link">Playground</a>
         <a href="/#contact" class="nav-cta" data-contact-open>
           <img src="/assets/imgEmail.svg" alt="" width="24" height="24">
           Work with me
@@ -86,10 +85,9 @@ const MENU_HTML = `
       <ul class="menu-links">
         <li><a href="/#work" class="menu-link"><span class="num">01</span><span class="word">Work</span></a></li>
         <li><a href="/about" class="menu-link"><span class="num">02</span><span class="word">About</span></a></li>
-        <li><a href="/playground" class="menu-link"><span class="num">03</span><span class="word">Playground</span></a></li>
       </ul>
     </nav>
-    <p class="menu-footer">VANCOUVER, BC</p>
+    <p class="menu-footer">PAKISTAN, FSD</p>
   </div>
 `;
 
@@ -108,16 +106,15 @@ const FOOTER_HTML = `
       <h2 class="ft-head"><button class="ft-head-btn" type="button" data-contact-open>Let’s grow your next idea</button></h2>
     </div>
 
-    <p class="ft-credit">Designed by Zainab Kabira · Vancouver, Canada @2026</p>
+    <p class="ft-credit">Built by Marriam Sajjad · Pakistan, FSD @2026</p>
     <nav class="ft-social" aria-label="Social links">
-      <a href="https://www.linkedin.com/in/zainabkabira/" target="_blank" rel="noopener">LinkedIn</a>
-      <a href="https://github.com/Zainabvkabira" target="_blank" rel="noopener">GitHub</a>
-      <a href="https://www.behance.net/zainab_kabira" target="_blank" rel="noopener">Behance</a>
+      <a href="https://www.linkedin.com/in/marriam-sajjad" target="_blank" rel="noopener">LinkedIn</a>
+      <a href="https://github.com/Marriam11" target="_blank" rel="noopener">GitHub</a>
     </nav>
   </footer>
 `;
 
-const CONTACT_EMAIL = 'zainabvkabira@gmail.com';
+const CONTACT_EMAIL = 'marriamsajjad197@gmail.com';
 
 /* contact drawer — opened by [data-contact-open] (nav CTA + footer headline).
    Daisy petals are generated in JS so the SVG stays readable. */
@@ -189,9 +186,8 @@ const CONTACT_HTML = `
       <p class="cd-alt-label">NOT A FAN OF FORMS?</p>
       <a class="cd-alt-mail" href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a>
       <nav class="cd-alt-social" aria-label="Social links">
-        <a href="https://www.linkedin.com/in/zainabkabira/" target="_blank" rel="noopener">LinkedIn&nbsp;↗</a>
-        <a href="https://github.com/Zainabvkabira" target="_blank" rel="noopener">GitHub&nbsp;↗</a>
-        <a href="https://www.behance.net/zainab_kabira" target="_blank" rel="noopener">Behance&nbsp;↗</a>
+        <a href="https://www.linkedin.com/in/marriam-sajjad" target="_blank" rel="noopener">LinkedIn&nbsp;↗</a>
+        <a href="https://github.com/Marriam11" target="_blank" rel="noopener">GitHub&nbsp;↗</a>
       </nav>
     </div>
   </aside>
