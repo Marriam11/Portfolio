@@ -1741,6 +1741,8 @@
         display: flex;
         flex-direction: column;
         justify-content: flex-start;
+        width: 100%;
+        max-width: 100%;
         overflow: hidden;
         /* push the eyebrow + header up (not centred) */
         padding: 96px 24px 48px;
@@ -1754,6 +1756,8 @@
         left: auto;
         top: auto;
         transform: none;
+        max-width: 100%;
+        overflow: hidden;
         font-size: 13px;
         margin-bottom: 22px;
       }
@@ -1762,15 +1766,19 @@
         display: block;
         position: relative;
         z-index: 2;
+        width: 100%;
+        max-width: 100%;
+        overflow: hidden;
       }
 
       .h-line {
         position: static;
-        display: block;
+        display: flex;
+        flex-wrap: wrap;
         width: 100%;
         max-width: 100%;
-        /* much bigger on mobile; allow the headline to wrap within the viewport
-           instead of forcing a horizontal scrollbar. */
+        /* let the mobile headline wrap naturally inside the viewport instead of
+           forcing a horizontal scroll from desktop-era nowrap rules. */
         font-size: clamp(46px, 14.5vw, 120px);
         letter-spacing: 0;
         line-height: 1.0;
@@ -1778,10 +1786,10 @@
         overflow-wrap: anywhere;
       }
 
-      /* mobile headline should wrap naturally instead of trying to preserve the
-         original desktop spacing hack. */
+      /* keep the word split visible on mobile without letting the line overflow. */
       .h-line.multidisciplinary .h-space {
-        display: none;
+        display: inline-block;
+        width: 0.26em;
       }
 
       .recorder {
@@ -5823,7 +5831,7 @@
               </button>
             </div>
           </div>
-          <a class="ff-starry-link" href="https://zainabvkabira.github.io/Starry-Night-Panic/" target="_blank"
+          <a class="ff-starry-link" href="https://marriam11.github.io/Starry-Night-Panic/" target="_blank"
             rel="noopener noreferrer" aria-label="Play Starry Night Panic"></a>
         </div>
 

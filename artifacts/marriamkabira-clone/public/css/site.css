@@ -1475,33 +1475,26 @@
       .ft-wavy { height: 20vw; top: -9.6vw; }
       .ft-head { letter-spacing: -0.04em; }
       .ft-sub { font-size: clamp(15px, 4vw, 19px); margin-bottom: 28px; }
-      /* tall ground band on phones (day art is 2880×406) — enough vertical dark
-         for the bottom bar AT the base plus a soil zone above it that the plant
-         roots sink into, even where the art's ridge dips lowest */
-      /* the whole meadow is LIFTED off the footer bottom so the bar gets its own
-         clean strip underneath. Plant art (fronds, the paint filter's wobble)
-         overhangs ~30px below a plant's base point, so the lift has to clear the
-         pills by more than the base maths alone suggests. */
-      .ft-land { width: 340%; bottom: 104px; }
-      body.night .footer .ft-land { width: 300%; }   /* night art is 4752×888 → keeps its ridge above the ground strip */
-      /* solid ground strip pinned to the footer bottom: sits over the meadow art
-         (z4) and under the bar (z5), so the socials + credit always read on a
-         near-black band in BOTH themes, on every real device. Opaque past the
-         pills, then fades near its top so it melts into the soil above rather
-         than cutting a hard seam (and hides the lifted land's bottom edge). */
+      /* On phones, keep the meadow crop tighter so it no longer reads like a
+         wide black band dragged down from the viewport edge. The art still gets
+         enough vertical room for the plant roots, but the dark strip underneath
+         stays compact instead of dominating the lower screen. */
+      .ft-land { width: 250%; bottom: 56px; }
+      body.night .footer .ft-land { width: 225%; }   /* night art is 4752×888 → keep the ridge above the darker strip */
+      /* Keep the ground strip subtle on mobile so the footer feels like part of
+         the page instead of a separate black scroller at the bottom. */
       .footer::after {
         content: '';
         position: absolute;
         left: 0;
         right: 0;
         bottom: 0;
-        height: 176px;
+        height: 116px;
         z-index: 4;
         pointer-events: none;
         background: linear-gradient(to top,
-          rgb(13, 12, 15) 0%,
-          rgb(13, 12, 15) 72%,       /* opaque well past the land's lifted bottom edge */
-          rgba(13, 12, 15, 0.84) 84%,
+          rgba(13, 12, 15, 0.96) 0%,
+          rgba(13, 12, 15, 0.66) 58%,
           rgba(13, 12, 15, 0) 100%);
       }
       /* sit the whole bar INSIDE the dark land band — on phones the night art's

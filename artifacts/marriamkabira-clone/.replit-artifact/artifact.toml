@@ -3,7 +3,7 @@ previewPath = "/"
 title = "Marriam Sajjad Portfolio"
 description = "A developer portfolio for Marriam Sajjad, including work case studies, an about page, a playground, theme toggle, navigation, motion, and responsive behavior."
 version = "1.0.0"
-id = "artifacts/zainabkabira-clone"
+id = "artifacts/marriamkabira-clone"
 router = "path"
 
 [[services]]
@@ -12,12 +12,12 @@ paths = [ "/" ]
 localPort = 23064
 
 [services.development]
-run = "pnpm --filter @workspace/zainabkabira-clone run dev"
+run = "pnpm --filter @workspace/marriamkabira-clone run dev"
 
 [services.production]
-build = [ "pnpm", "--filter", "@workspace/zainabkabira-clone", "run", "build" ]
+build = [ "pnpm", "--filter", "@workspace/marriamkabira-clone", "run", "build" ]
 serve = "static"
-publicDir = "artifacts/zainabkabira-clone/dist/public"
+publicDir = "artifacts/marriamkabira-clone/dist/public"
 
 [[services.production.rewrites]]
 from = "/*"
