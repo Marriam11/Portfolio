@@ -479,7 +479,7 @@
     .ft-land-clip {
       position: absolute;
       inset: 0;
-      overflow-x: clip;
+      overflow-x: hidden;
       overflow-y: visible;
       z-index: 3;
       pointer-events: none;
