@@ -664,7 +664,7 @@
       pointer-events: none;
       /* the footer is overflow:visible now (so the crest can poke on iOS), so clip the
          edge plants here — they used to be clipped by the footer's own overflow */
-      overflow-x: clip;
+      overflow-x: hidden;
       overflow-y: visible;
     }
     .footer.garden-live { cursor: none; }   /* replaced by the watering can */
