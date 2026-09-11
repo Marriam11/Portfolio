@@ -1666,6 +1666,9 @@ body.night #page-loader { background: var(--c-night); }
   z-index: 9000;
   pointer-events: none;
   visibility: hidden;      /* inert until a transition activates it */
+  /* Offscreen panes must not extend document overflow in mobile Safari. */
+  overflow: hidden;
+  contain: paint;
 }
 #route-curtain.is-active { visibility: visible; }
 
@@ -1687,7 +1690,7 @@ body.night #page-loader { background: var(--c-night); }
   position: absolute;
   left: 0;
   width: 100%;
-  height: 50vh;
+  height: 50%;
   z-index: 1;           /* stack above the scrim */
   background: var(--bg-base);
   will-change: transform;
