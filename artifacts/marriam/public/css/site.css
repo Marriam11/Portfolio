@@ -60,6 +60,8 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html {
       scroll-behavior: smooth;
+      overflow-x: clip;
+      overflow-y: auto;
       /* kill the rubber-band overscroll: without this, pulling down at the very
          top lets the sticky hero slide below its origin and exposes the cream
          projects section (higher z-index) behind it. */
@@ -70,7 +72,8 @@
       font-family: 'Space Grotesk', sans-serif;
       background: var(--bg-base);
       color: var(--dark);
-      overflow-x: hidden;
+      overflow-x: clip;
+      overflow-y: visible;
       overscroll-behavior-y: none;
     }
 
@@ -1635,8 +1638,6 @@ site-nav, site-footer { display: contents; }
    dots fade out nearest-first as a wave. Markup lives at the top of <body>;
    window.pageLoader (js/site.js) shows/hides it. transform/opacity only.
    ════════════════════════════════════════════════════════════════════════ */
-html.pl-lock, body.pl-lock { overflow: hidden; }
-
 #page-loader {
   position: fixed;
   inset: 0;

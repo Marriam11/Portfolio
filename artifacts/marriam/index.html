@@ -88,17 +88,15 @@
   <link rel="stylesheet" href="/css/site.css">
 
   <script>
-    /* mobile gate: ≤820px at load renders case studies as a plain vertical
-       scroll — the cover-slide deck IIFEs bail on html.cs-static, same
-       pattern as their prefers-reduced-motion bail. Decided once at load so
-       the class-scoped mobile CSS and the JS can never disagree mid-session
-       (a phone rotating past 820px keeps the static layout it booted with). */
+    /* Update layout and input handling on resize and rotation. */
     (function () {
-      /* innerWidth can read 0 in embedded/prerender contexts before the first
-         layout — fall back to clientWidth, then the physical screen, so a
-         desktop never boots into the static layout by accident. */
-      var w = window.innerWidth || document.documentElement.clientWidth || screen.width;
-      if (w && w <= 820) document.documentElement.classList.add('cs-static');
+      var mq = matchMedia('(max-width: 1100px), (max-height: 800px)');
+      function syncLayout() {
+        document.documentElement.classList.toggle('cs-static', mq.matches);
+        window.dispatchEvent(new Event('layout:change'));
+      }
+      mq.addEventListener('change', syncLayout);
+      syncLayout();
     })();
   </script>
 
@@ -1139,9 +1137,9 @@
          now lives on the .t-willow layer below so it can sway in the breeze; this rule
          just holds the sky-cream base colour behind it. */
       background: var(--surface-raised);
-      /* clip horizontal land bleed, but let the wavy grass overflow the top —
+      /* hide horizontal land bleed, but let the wavy grass overflow the top —
          it sits at top:-196 and a plain overflow:hidden cropped the whole wave */
-      overflow-x: clip;
+      overflow-x: hidden;
       overflow-y: visible;
     }
 
@@ -2697,9 +2695,9 @@
       top: 0;
       z-index: 2;
       /* scroll up and over the pinned hero */
-      /* clip sideways (the land is wider than the viewport) but let the land
-         spill upward past the top edge so it laps over the hero on scroll */
-      overflow-x: clip;
+      /* hide sideways overflow (the land is wider than the viewport) but let the
+         land spill upward past the top edge so it laps over the hero on scroll */
+      overflow-x: hidden;
       overflow-y: visible;
       background: var(--bg-base);
       /* light warm base (#fff9f1) */
@@ -2950,8 +2948,8 @@
       top: 0;
       z-index: 3;
       /* scroll up and over the pinned experience */
-      overflow-x: clip;
-      /* clip sideways, let the crest spill up over experience */
+      overflow-x: hidden;
+      /* hide sideways overflow, let the crest spill up over experience */
       overflow-y: visible;
       background: #9eafbe;
       /* fallback behind the photo */
@@ -3882,7 +3880,7 @@
 
     /* ════ ABOUT — RESPONSIVE: below 1100px the 1440 canvases reflow into a
        single flow column (no pins, no fixed stages). ════ */
-    @media (max-width: 1100px) {
+    @media (max-width: 1440px), (max-height: 800px) {
 
       /* — intro: flow column, vertically centred in the first screen — */
       .about-intro {
@@ -4230,7 +4228,7 @@
       /* JS bottom-pins it (sticky) so the footer scrolls over */
       z-index: 1;
       /* below the footer (z-index 12) so it laps over */
-      overflow-x: clip;
+      overflow-x: hidden;
       /* contains the full-bleed immersive gallery; no page scroll */
     }
 
@@ -4422,23 +4420,11 @@
        Cards arranged on a rotating ring: the centred card sits upright and
        plays; neighbours recede in Z, rotate away and dim. Drag / wheel /
        ← → to rotate. Click the centre card (or "Open full screen") to
-       expand into a lightbox. Page scroll is locked while #playground is
-       active (fully immersive, footer hidden). ════════════════════════ */
-    body.route-playground {
-      overflow: hidden;
-    }
-
-    /* lock page scroll on this route */
-    body.route-playground site-footer {
-      display: none;
-    }
-
-    /* fully immersive — no footer */
-    /* .pg-flow (below) owns the section's box on this route — padding clears the nav */
-
+       expand into a lightbox. The carousel remains in normal document flow. ════════════════════════ */
+    /* Playground participates in document flow, including the shared footer. */
     .pg-flow {
-      position: fixed;
-      inset: 0;
+      position: relative;
+      min-height: 100svh;
       z-index: 2;
       --pgf-accent: #000;
       /* accent: black in light mode… */
@@ -4450,7 +4436,7 @@
       padding: clamp(112px, 17vh, 156px) 0 24px;
       /* clear the fixed nav + breathing room before the copy */
       background: var(--bg-base);
-      overflow: hidden;
+      overflow: clip;
       -webkit-user-select: none;
       user-select: none;
     }
@@ -4516,7 +4502,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      touch-action: none;
+      touch-action: pan-y pinch-zoom;
       overscroll-behavior: contain;
     }
 
@@ -4898,8 +4884,7 @@
   <!-- ════ LOADING SCREEN (Figma node 572:1811) — Pac-Man chomping 4 dots.
        In the markup so it paints on first frame (no FOUC); controller lives in
        js/site.js (window.pageLoader) and hides it once fonts + hero shader are
-       ready. Pre-paint scroll lock so the page underneath can't peek/scroll. ══ -->
-  <script>document.documentElement.classList.add('pl-lock');</script>
+       ready. ══ -->
   <div id="page-loader" role="status" aria-live="polite" aria-label="Loading" class="is-hiding" style="display: none;">
     <div class="pl-stage">
       <span class="pl-dots" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></span>
@@ -17982,7 +17967,6 @@
         const view = document.getElementById('fireflut-view');
         if (!view) return;
         if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-        if (document.documentElement.classList.contains('cs-static')) return;
         const page = view.querySelector('.cs-page');
         if (!page) return;
         const sections = [...page.children].filter(el => el.classList.contains('cs-band'));
@@ -18023,6 +18007,11 @@
         const stopOfSec = [];
 
         function layout() {
+          if (document.documentElement.classList.contains('cs-static')) {
+            cancelAnimationFrame(raf); cancelAnimationFrame(deckRaf);
+            raf = deckRaf = 0; deckAnimating = false; deckCooldown = false;
+            return;
+          }
           V = window.innerHeight;
           if (!V || view.hidden) return;
           const SL = Math.round(V * SL_FACTOR);
@@ -18075,6 +18064,7 @@
         let targetS = 0, renderS = 0, raf = 0;
         function readTarget() { targetS = Math.max(0, -scroller.getBoundingClientRect().top); }
         function frame() {
+          if (document.documentElement.classList.contains('cs-static')) { raf = 0; return; }
           // scroller rect is read HERE, at rAF time — reading it in the raw scroll
           // event fired several times a frame and forced synchronous layout each time
           readTarget();
@@ -18086,7 +18076,7 @@
         }
 
         function render(s) {
-          if (!marks.length) return;
+          if (document.documentElement.classList.contains('cs-static') || !marks.length) return;
           secs.forEach((sec, i) => {
             const m = marks[i];
             const liveStart = i === 0 ? -Infinity : marks[i - 1].slideStart - V;
@@ -18127,7 +18117,7 @@
 
         // view.hidden: the four case-study decks all listen on window, so without this
         // each one measured its scroller on every scroll frame of every other page.
-        const onScroll = () => { if (deckAnimating || view.hidden) return; if (!raf) raf = requestAnimationFrame(frame); };
+        const onScroll = () => { if (document.documentElement.classList.contains('cs-static') || deckAnimating || view.hidden) return; if (!raf) raf = requestAnimationFrame(frame); };
         window.addEventListener('scroll', onScroll, { passive: true });
 
         // ── snap deck: each gesture tweens render() to the next panel's rest offset over a fixed
@@ -18144,6 +18134,7 @@
           if (raf) { cancelAnimationFrame(raf); raf = 0; }
           if (deckRaf) cancelAnimationFrame(deckRaf);
           (function step(now) {
+            if (!deckActive()) { deckAnimating = false; return; }
             const k = Math.min(1, (now - t0) / DUR);
             const e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;   // easeInOutCubic — smooth start + settle
             const y = startY + (endY - startY) * e;
@@ -18153,9 +18144,9 @@
             else { renderS = Math.max(0, endY - O); targetS = renderS; render(renderS); deckAnimating = false; }
           })(performance.now());
           // watchdog: if rAF stalls (throttled/background tab), force-finish so the deck never locks
-          setTimeout(() => { if (deckAnimating && curStop === i) { renderS = Math.max(0, endY - O); targetS = renderS; window.scrollTo({ top: endY, behavior: 'instant' }); render(renderS); deckAnimating = false; } }, DUR + 300);
+          setTimeout(() => { if (deckActive() && deckAnimating && curStop === i) { renderS = Math.max(0, endY - O); targetS = renderS; window.scrollTo({ top: endY, behavior: 'instant' }); render(renderS); deckAnimating = false; } }, DUR + 300);
         }
-        const deckActive = () => !view.hidden && route.token() === '#fireflut' && stops.length > 1;
+        const deckActive = () => !document.documentElement.classList.contains('cs-static') && !view.hidden && route.token() === '#fireflut' && stops.length > 1;
         const inModal = (el) => el && el.closest && el.closest('.contact-drawer, .contact-scrim, .pgf-lightbox');
         function deckStep(dir) { if (!deckAnimating) goToStop(nearestStop(renderS) + dir); }
         window.addEventListener('wheel', (e) => {
@@ -18194,6 +18185,7 @@
         }, { passive: true });
 
         let rzT = 0; window.addEventListener('resize', () => { clearTimeout(rzT); rzT = setTimeout(layout, 120); });
+        window.addEventListener('layout:change', layout);
         window.addEventListener('load', layout);
         new MutationObserver(() => { if (!view.hidden) { curStop = 0; requestAnimationFrame(layout); } })
           .observe(view, { attributes: true, attributeFilter: ['hidden'] });
@@ -18400,7 +18392,6 @@
         const view = document.getElementById('hatcha-view');
         if (!view) return;
         if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-        if (document.documentElement.classList.contains('cs-static')) return;
         const page = view.querySelector('.cs-page');
         if (!page) return;
         const sections = [...page.children].filter(el => el.classList.contains('cs-band'));
@@ -18441,6 +18432,11 @@
         const stopOfSec = [];
 
         function layout() {
+          if (document.documentElement.classList.contains('cs-static')) {
+            cancelAnimationFrame(raf); cancelAnimationFrame(deckRaf);
+            raf = deckRaf = 0; deckAnimating = false; deckCooldown = false;
+            return;
+          }
           V = window.innerHeight;
           if (!V || view.hidden) return;
           const SL = Math.round(V * SL_FACTOR);
@@ -18493,6 +18489,7 @@
         let targetS = 0, renderS = 0, raf = 0;
         function readTarget() { targetS = Math.max(0, -scroller.getBoundingClientRect().top); }
         function frame() {
+          if (document.documentElement.classList.contains('cs-static')) { raf = 0; return; }
           // scroller rect is read HERE, at rAF time — reading it in the raw scroll
           // event fired several times a frame and forced synchronous layout each time
           readTarget();
@@ -18504,7 +18501,7 @@
         }
 
         function render(s) {
-          if (!marks.length) return;
+          if (document.documentElement.classList.contains('cs-static') || !marks.length) return;
           secs.forEach((sec, i) => {
             const m = marks[i];
             const liveStart = i === 0 ? -Infinity : marks[i - 1].slideStart - V;
@@ -18545,7 +18542,7 @@
 
         // view.hidden: the four case-study decks all listen on window, so without this
         // each one measured its scroller on every scroll frame of every other page.
-        const onScroll = () => { if (deckAnimating || view.hidden) return; if (!raf) raf = requestAnimationFrame(frame); };
+        const onScroll = () => { if (document.documentElement.classList.contains('cs-static') || deckAnimating || view.hidden) return; if (!raf) raf = requestAnimationFrame(frame); };
         window.addEventListener('scroll', onScroll, { passive: true });
 
         // ── snap deck: each gesture tweens render() to the next panel's rest offset over a fixed
@@ -18562,6 +18559,7 @@
           if (raf) { cancelAnimationFrame(raf); raf = 0; }
           if (deckRaf) cancelAnimationFrame(deckRaf);
           (function step(now) {
+            if (!deckActive()) { deckAnimating = false; return; }
             const k = Math.min(1, (now - t0) / DUR);
             const e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;   // easeInOutCubic — smooth start + settle
             const y = startY + (endY - startY) * e;
@@ -18571,9 +18569,9 @@
             else { renderS = Math.max(0, endY - O); targetS = renderS; render(renderS); deckAnimating = false; }
           })(performance.now());
           // watchdog: if rAF stalls (throttled/background tab), force-finish so the deck never locks
-          setTimeout(() => { if (deckAnimating && curStop === i) { renderS = Math.max(0, endY - O); targetS = renderS; window.scrollTo({ top: endY, behavior: 'instant' }); render(renderS); deckAnimating = false; } }, DUR + 300);
+          setTimeout(() => { if (deckActive() && deckAnimating && curStop === i) { renderS = Math.max(0, endY - O); targetS = renderS; window.scrollTo({ top: endY, behavior: 'instant' }); render(renderS); deckAnimating = false; } }, DUR + 300);
         }
-        const deckActive = () => !view.hidden && route.token() === '#hatcha' && stops.length > 1;
+        const deckActive = () => !document.documentElement.classList.contains('cs-static') && !view.hidden && route.token() === '#hatcha' && stops.length > 1;
         const inModal = (el) => el && el.closest && el.closest('.contact-drawer, .contact-scrim, .pgf-lightbox');
         function deckStep(dir) { if (!deckAnimating) goToStop(nearestStop(renderS) + dir); }
         window.addEventListener('wheel', (e) => {
@@ -18612,6 +18610,7 @@
         }, { passive: true });
 
         let rzT = 0; window.addEventListener('resize', () => { clearTimeout(rzT); rzT = setTimeout(layout, 120); });
+        window.addEventListener('layout:change', layout);
         window.addEventListener('load', layout);
         new MutationObserver(() => { if (!view.hidden) { curStop = 0; requestAnimationFrame(layout); } })
           .observe(view, { attributes: true, attributeFilter: ['hidden'] });
@@ -18706,7 +18705,6 @@
         const view = document.getElementById('existence-view');
         if (!view) return;
         if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-        if (document.documentElement.classList.contains('cs-static')) return;
         const page = view.querySelector('.cs-page');
         if (!page) return;
         const sections = [...page.children].filter(el => el.classList.contains('cs-band'));
@@ -18747,6 +18745,11 @@
         const stopOfSec = [];
 
         function layout() {
+          if (document.documentElement.classList.contains('cs-static')) {
+            cancelAnimationFrame(raf); cancelAnimationFrame(deckRaf);
+            raf = deckRaf = 0; deckAnimating = false; deckCooldown = false;
+            return;
+          }
           V = window.innerHeight;
           if (!V || view.hidden) return;
           const SL = Math.round(V * SL_FACTOR);
@@ -18799,6 +18802,7 @@
         let targetS = 0, renderS = 0, raf = 0;
         function readTarget() { targetS = Math.max(0, -scroller.getBoundingClientRect().top); }
         function frame() {
+          if (document.documentElement.classList.contains('cs-static')) { raf = 0; return; }
           // scroller rect is read HERE, at rAF time — reading it in the raw scroll
           // event fired several times a frame and forced synchronous layout each time
           readTarget();
@@ -18810,7 +18814,7 @@
         }
 
         function render(s) {
-          if (!marks.length) return;
+          if (document.documentElement.classList.contains('cs-static') || !marks.length) return;
           secs.forEach((sec, i) => {
             const m = marks[i];
             const liveStart = i === 0 ? -Infinity : marks[i - 1].slideStart - V;
@@ -18860,7 +18864,7 @@
 
         // view.hidden: the four case-study decks all listen on window, so without this
         // each one measured its scroller on every scroll frame of every other page.
-        const onScroll = () => { if (deckAnimating || view.hidden) return; if (!raf) raf = requestAnimationFrame(frame); };
+        const onScroll = () => { if (document.documentElement.classList.contains('cs-static') || deckAnimating || view.hidden) return; if (!raf) raf = requestAnimationFrame(frame); };
         window.addEventListener('scroll', onScroll, { passive: true });
 
         // ── snap deck: each gesture tweens render() to the next panel's rest offset over a fixed
@@ -18877,6 +18881,7 @@
           if (raf) { cancelAnimationFrame(raf); raf = 0; }
           if (deckRaf) cancelAnimationFrame(deckRaf);
           (function step(now) {
+            if (!deckActive()) { deckAnimating = false; return; }
             const k = Math.min(1, (now - t0) / DUR);
             const e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;   // easeInOutCubic — smooth start + settle
             const y = startY + (endY - startY) * e;
@@ -18886,9 +18891,9 @@
             else { renderS = Math.max(0, endY - O); targetS = renderS; render(renderS); deckAnimating = false; }
           })(performance.now());
           // watchdog: if rAF stalls (throttled/background tab), force-finish so the deck never locks
-          setTimeout(() => { if (deckAnimating && curStop === i) { renderS = Math.max(0, endY - O); targetS = renderS; window.scrollTo({ top: endY, behavior: 'instant' }); render(renderS); deckAnimating = false; } }, DUR + 300);
+          setTimeout(() => { if (deckActive() && deckAnimating && curStop === i) { renderS = Math.max(0, endY - O); targetS = renderS; window.scrollTo({ top: endY, behavior: 'instant' }); render(renderS); deckAnimating = false; } }, DUR + 300);
         }
-        const deckActive = () => !view.hidden && route.token() === '#existence' && stops.length > 1;
+        const deckActive = () => !document.documentElement.classList.contains('cs-static') && !view.hidden && route.token() === '#existence' && stops.length > 1;
         const inModal = (el) => el && el.closest && el.closest('.contact-drawer, .contact-scrim, .pgf-lightbox');
         function deckStep(dir) { if (!deckAnimating) goToStop(nearestStop(renderS) + dir); }
         window.addEventListener('wheel', (e) => {
@@ -18927,6 +18932,7 @@
         }, { passive: true });
 
         let rzT = 0; window.addEventListener('resize', () => { clearTimeout(rzT); rzT = setTimeout(layout, 120); });
+        window.addEventListener('layout:change', layout);
         window.addEventListener('load', layout);
         new MutationObserver(() => { if (!view.hidden) { curStop = 0; requestAnimationFrame(layout); } })
           .observe(view, { attributes: true, attributeFilter: ['hidden'] });
@@ -19032,7 +19038,6 @@
         const view = document.getElementById('jumpable-view');
         if (!view) return;
         if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-        if (document.documentElement.classList.contains('cs-static')) return;
         const page = view.querySelector('.cs-page');
         if (!page) return;
         const sections = [...page.children].filter(el => el.classList.contains('cs-band'));
@@ -19073,6 +19078,11 @@
         const stopOfSec = [];
 
         function layout() {
+          if (document.documentElement.classList.contains('cs-static')) {
+            cancelAnimationFrame(raf); cancelAnimationFrame(deckRaf);
+            raf = deckRaf = 0; deckAnimating = false; deckCooldown = false;
+            return;
+          }
           V = window.innerHeight;
           if (!V || view.hidden) return;
           const SL = Math.round(V * SL_FACTOR);
@@ -19125,6 +19135,7 @@
         let targetS = 0, renderS = 0, raf = 0;
         function readTarget() { targetS = Math.max(0, -scroller.getBoundingClientRect().top); }
         function frame() {
+          if (document.documentElement.classList.contains('cs-static')) { raf = 0; return; }
           // scroller rect is read HERE, at rAF time — reading it in the raw scroll
           // event fired several times a frame and forced synchronous layout each time
           readTarget();
@@ -19136,7 +19147,7 @@
         }
 
         function render(s) {
-          if (!marks.length) return;
+          if (document.documentElement.classList.contains('cs-static') || !marks.length) return;
           secs.forEach((sec, i) => {
             const m = marks[i];
             const liveStart = i === 0 ? -Infinity : marks[i - 1].slideStart - V;
@@ -19177,7 +19188,7 @@
 
         // view.hidden: the four case-study decks all listen on window, so without this
         // each one measured its scroller on every scroll frame of every other page.
-        const onScroll = () => { if (deckAnimating || view.hidden) return; if (!raf) raf = requestAnimationFrame(frame); };
+        const onScroll = () => { if (document.documentElement.classList.contains('cs-static') || deckAnimating || view.hidden) return; if (!raf) raf = requestAnimationFrame(frame); };
         window.addEventListener('scroll', onScroll, { passive: true });
 
         // ── snap deck: each gesture tweens render() to the next panel's rest offset over a fixed
@@ -19194,6 +19205,7 @@
           if (raf) { cancelAnimationFrame(raf); raf = 0; }
           if (deckRaf) cancelAnimationFrame(deckRaf);
           (function step(now) {
+            if (!deckActive()) { deckAnimating = false; return; }
             const k = Math.min(1, (now - t0) / DUR);
             const e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;   // easeInOutCubic — smooth start + settle
             const y = startY + (endY - startY) * e;
@@ -19203,9 +19215,9 @@
             else { renderS = Math.max(0, endY - O); targetS = renderS; render(renderS); deckAnimating = false; }
           })(performance.now());
           // watchdog: if rAF stalls (throttled/background tab), force-finish so the deck never locks
-          setTimeout(() => { if (deckAnimating && curStop === i) { renderS = Math.max(0, endY - O); targetS = renderS; window.scrollTo({ top: endY, behavior: 'instant' }); render(renderS); deckAnimating = false; } }, DUR + 300);
+          setTimeout(() => { if (deckActive() && deckAnimating && curStop === i) { renderS = Math.max(0, endY - O); targetS = renderS; window.scrollTo({ top: endY, behavior: 'instant' }); render(renderS); deckAnimating = false; } }, DUR + 300);
         }
-        const deckActive = () => !view.hidden && route.token() === '#jumpable' && stops.length > 1;
+        const deckActive = () => !document.documentElement.classList.contains('cs-static') && !view.hidden && route.token() === '#jumpable' && stops.length > 1;
         const inModal = (el) => el && el.closest && el.closest('.contact-drawer, .contact-scrim, .pgf-lightbox');
         function deckStep(dir) { if (!deckAnimating) goToStop(nearestStop(renderS) + dir); }
         window.addEventListener('wheel', (e) => {
@@ -19244,6 +19256,7 @@
         }, { passive: true });
 
         let rzT = 0; window.addEventListener('resize', () => { clearTimeout(rzT); rzT = setTimeout(layout, 120); });
+        window.addEventListener('layout:change', layout);
         window.addEventListener('load', layout);
         new MutationObserver(() => { if (!view.hidden) { curStop = 0; requestAnimationFrame(layout); } })
           .observe(view, { attributes: true, attributeFilter: ['hidden'] });
@@ -19651,24 +19664,12 @@
           // ≤1100px the sections reflow into a flow column; drop the desktop pin's
           // inline styles and bottom-pin each section instead, so the page keeps
           // the layered reveal: intro → experience → fun facts → footer
-          if (window.matchMedia('(max-width: 1100px)').matches) {
+          if (window.matchMedia('(max-width: 1440px), (max-height: 800px)').matches) {
             stage.style.height = '';
             if (label) label.style.top = '';
-            if (reduce) {
-              [intro, exp, fun].forEach(s => s && unpin(s));
-              exp.style.minHeight = '';
-              setHold(0, -1, 0);
-              return;
-            }
-            const mvh = window.innerHeight;
-            // the collapsed list is shorter than the screen, so the section would
-            // pin without filling it — floor it at a full viewport so the hold below
-            // has something to sit behind
-            exp.style.minHeight = mvh + 'px';
-            if (intro) pinBottom(intro);
-            pinBottom(exp);
-            setHold(mvh, exp.offsetHeight, 0.6);
-            if (fun) pinBottom(fun);
+            [intro, exp, fun].forEach(el => el && unpin(el));
+            exp.style.minHeight = '';
+            setHold(0, -1, 0);
             return;
           }
           // desktop: clear the mobile pins (CSS sticky top:0 + the logic below take over)
@@ -22770,7 +22771,7 @@
       // of the viewport during its hold window (the gap showed up between the last tile
       // and the testimonials sliding up).
       function repinMobile() {
-        if (!mobilePinned) return;
+        if (document.documentElement.classList.contains('cs-static') || !mobilePinned) return;
         const vh = Scroll.vh();
         const top = Math.min(0, vh - testiH) + 'px';
         if (top !== lastPinTop) { testi.style.top = top; lastPinTop = top; }
@@ -22780,7 +22781,7 @@
       let lastPinTop = null, lastFwTop = null;
       function setPin() {
         lastPinTop = lastFwTop = null;   // this rewrites `top` itself; don't let the dedupe skip the next sync
-        if (reduce) {
+        if (reduce || document.documentElement.classList.contains('cs-static')) {
           fw.style.position = 'relative';   // no pin under reduced-motion
           fw.style.top = 'auto';
           fw.style.transform = '';
@@ -22873,6 +22874,7 @@
         lastW = window.innerWidth;
         setPin();
       });
+      window.addEventListener('layout:change', setPin);
       window.addEventListener('load', setPin);
       // Both pin values are derived from .featured-work's measured height: the
       // sticky `top` (= vh - height) that decides WHERE the section stops
@@ -23487,12 +23489,12 @@
       stage.addEventListener('pointercancel', endDrag);
       stage.addEventListener('pointerleave', endDrag);
 
-      /* ── wheel over the stage → rotate (endless loop, page never scrolls) ── */
+      /* ── wheel over the stage → rotate (horizontal gestures only; vertical gestures scroll the page) ── */
       var wheelLock = false;
       stage.addEventListener('wheel', function (e) {
         var dx = e.deltaX, dy = e.deltaY;
-        var dir = (Math.abs(dx) > Math.abs(dy)) ? (dx < 0 ? -1 : 1) : (dy < 0 ? -1 : 1);
-        if (dir === 0) return;
+        if (e.ctrlKey || !dx || Math.abs(dy) >= Math.abs(dx)) return;
+        var dir = dx < 0 ? -1 : 1;
         e.preventDefault();
         if (wheelLock) return;
         wheelLock = true;
@@ -23578,7 +23580,6 @@
       /* mobile: the gallery stacks into a plain vertical run, so neither the
          duplicate tile set nor the rAF scrollLeft loop has anything to do —
          and the loop would fight the page's own scrolling. */
-      if (document.documentElement.classList.contains('cs-static')) return;
 
       /* duplicate the tile set once so the loop wraps invisibly */
       var originals = Array.prototype.slice.call(g.children);
@@ -23657,7 +23658,7 @@
       function tick(ts) {
         rafId = 0;
         if (!running) return;           // view hidden → loop parks until re-shown
-        if (!reduce) {
+        if (!reduce && !document.documentElement.classList.contains('cs-static')) {
           if (settled < 30) measure();  // ~0.5s of agreement, then stop forcing layout each frame
           if (half > 0 && !paused) {
             /* clamped so a long hover or a backgrounded tab can't bank a jump */
@@ -23902,6 +23903,57 @@
   <div class="ft-tip" aria-hidden="true">Click to grow</div>
   <div class="dot-cursor" aria-hidden="true" style="transform: translate3d(902px, 152.333px, 0px);"><span
       class="dot-label">Press play, stranger</span></div>
+
+  <style id="responsive-scroll-fixes">
+    /* Keep document scrolling on html; body must not become a scroll container. */
+    html { overflow-x: clip; overflow-y: auto; }
+    body { overflow-x: clip; overflow-y: visible; }
+    html.cs-static .cs-slide-scroller,
+    html.cs-static .cs-slide-stage,
+    html.cs-static .cs-slide-sec,
+    html.cs-static .cs-slide-inner {
+      position: relative !important;
+      inset: auto !important;
+      width: 100% !important;
+      height: auto !important;
+      min-height: 0 !important;
+      transform: none !important;
+      visibility: visible !important;
+      overflow: visible !important;
+      will-change: auto !important;
+    }
+    html.cs-static .cs-pager,
+    html.cs-static .cs-gallery [data-clone] { display: none !important; }
+    html.cs-static .cs-band { height: auto !important; min-height: 0 !important; }
+    html.cs-static .hero,
+    html.cs-static .featured-work,
+    html.cs-static .testimonials {
+      position: relative !important;
+      top: auto !important;
+      bottom: auto !important;
+      height: auto !important;
+      min-height: 100svh;
+      margin-top: 0 !important;
+    }
+    html.cs-static .testimonials { min-height: 0 !important; }
+    @media (max-width: 1440px), (max-height: 800px) {
+      .about-intro, .about-exp, .about-fun {
+        position: relative !important;
+        top: auto !important;
+        height: auto !important;
+        min-height: 0 !important;
+        margin-top: 0 !important;
+        filter: none !important;
+      }
+      .about-intro { min-height: 100svh !important; padding-bottom: 96px; }
+      .about-intro-stage, .about-exp-stage, .about-fun-stage {
+        max-width: 100%;
+        height: auto !important;
+      }
+      .ai-scene { transform: none !important; }
+    }
+  </style>
+
 </body>
 
 </html>
